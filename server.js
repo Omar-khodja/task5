@@ -2,6 +2,7 @@ const express = require("express");
 const path = require("path");
 const nodemailer = require("nodemailer");
 require('dotenv').config();
+const session = require("express-session");
 
 const app = express();
 app.use(express.urlencoded({ extended: true }));
@@ -10,6 +11,7 @@ app.use(express.static(path.join(__dirname, "main")));
 
 
 verificationCode = 0
+
 
 const transporter = nodemailer.createTransport({
     service:'gmail',
@@ -22,7 +24,14 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-
+app.use(
+    session({
+        secret: "your_secret_key",
+        resave: false,
+        saveUninitialized: true,
+        cookie: { secure: false }, 
+    })
+);
 
 
 let users = [
@@ -43,6 +52,7 @@ app.post('/login', async (req, res) => {
     const user = users.find(u => u.username === username && u.password === password);
 
     if (user) {
+        req.session.user = user;
         res.json({ success: true, message: "2FA code sent to your email." });
         const code = Math.floor(0 + Math.random() * 99);
         verificationCode = code
@@ -83,13 +93,33 @@ app.post('/login2', (req, res) => {
     const { code } = req.body;
     
     if (verificationCode == code) {
-        res.json({ success: true, message: "2FA verification successful!" });
+        const user = users.find(u => u.username); 
+        res.json({ success: true, message: "2FA verification successful!", user: req.session.user });
     } else {
-        res.status(401).json({ success: false, message: "Invalid 2FA code." });
+        res.status(401).json({
+            success: false, message: "Invalid 2FA code.", user: {
+                username: user.username,
+                email: user.email
+            } });
     }
 });
+
+
+app.get('/myaccount', (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({ success: false, message: "User not logged in." });
+    }
+    res.json({ success: true, user: req.session.user });
+});
+
+
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "main", "login.html"));
+});
+
+app.post('/logout', (req, res) => {
+    req.session.destroy();
+    res.json({ success: true, message: "Logged out successfully" });
 });
 
 

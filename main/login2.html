@@ -50,7 +50,10 @@
             document.getElementById('message2').textContent = result.message;
 
             if (result.success) {
+                 sessionStorage.setItem("user", JSON.stringify(result.user));
                 window.location.href = '/myaccount.html';
+            } else {
+                alert("Invalid 2FA Code");
             }
         });
     </script>
