@@ -54,35 +54,27 @@
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
         const msgElement = document.getElementById('msg');
+          console.log("try")
 
-        try {
-            const response = await fetch('http://localhost:3000/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ username, password })
+         try {
+            const response = await fetch("/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password }),
             });
 
-            const result = await response.json();
-
-            if (result.success) {
-                // Store username in sessionStorage for the 2FA step
-                sessionStorage.setItem('currentUser', username);
-
-                // Redirect to 2FA page
+            const data = await response.json();
+            if (data.success) {
+                console.log("logedin")
                 window.location.href = 'login2.html';
             } else {
                 msgElement.textContent = result.message || "Login failed";
+                console.log("login failed")
             }
         } catch (error) {
             console.error('Login error:', error);
             msgElement.textContent = "Cannot connect to server. Please try again later.";
-        } finally {
-            // Reset button state
-            btn.disabled = false;
-            btn.innerHTML = '<i class="bi bi-box-arrow-in-right"></i> Login';
-        }
+        } 
     });
 </script>
 </body>

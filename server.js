@@ -28,8 +28,8 @@ const transporter = nodemailer.createTransport({
 let users = [
     {
         username: "user1",
-        password: "password1",
-        email: "user1@example.com" 
+        password: "pwd1",
+        email: "omar.khodjapro@gmail.com" 
     },
     {
         username: "user2",
@@ -49,7 +49,7 @@ app.post('/login', async (req, res) => {
         const mailOptions = await transporter.sendMail({
             from: {
                 name: "assingnment1",
-                pass: process.env.USER
+                pass: process.env.EMAIL_USER
 
             }, // sender address
             to: user.email, // list of receivers
@@ -57,17 +57,20 @@ app.post('/login', async (req, res) => {
             text:  `your verification code is ${code} `, // plain text body
             html: `<b>Your verification code is ${code}</b>`
         });
-        const sendMail = async(transporter,mailOptions)=>{
+        const sendMail = async(transporter,mailOptions)=>
+            {
             
             try {
-                //await transporter.sendMail(mailOptions)
+                await transporter.sendMail(mailOptions)
+                console.log("email has been sent")
                 res.json({ success: true, message: "2FA code sent to your email." });
+                
              
             } catch (error) {
                 console.error("❌ Email sending failed:", error);
                 res.status(500).json({ success: false, message: "Failed to send email." });
             }
-        }
+       }
 
    
 
