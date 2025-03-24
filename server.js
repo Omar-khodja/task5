@@ -43,12 +43,12 @@ app.post('/login', async (req, res) => {
     const user = users.find(u => u.username === username && u.password === password);
 
     if (user) {
+        res.json({ success: true, message: "2FA code sent to your email." });
         const code = Math.floor(0 + Math.random() * 99);
         verificationCode = code
 
         const mailOptions = await transporter.sendMail({
             from: {
-                name: "assingnment1",
                 pass: process.env.EMAIL_USER
 
             }, // sender address
@@ -63,7 +63,6 @@ app.post('/login', async (req, res) => {
             try {
                 await transporter.sendMail(mailOptions)
                 console.log("email has been sent")
-                res.json({ success: true, message: "2FA code sent to your email." });
                 
              
             } catch (error) {

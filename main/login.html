@@ -47,14 +47,11 @@
     btn.addEventListener('click', async function (event) {
         event.preventDefault();
 
-        // Show loading state
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Logging in...';
-
+    
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
         const msgElement = document.getElementById('msg');
-          console.log("try")
+          console.log(username)
 
          try {
             const response = await fetch("/login", {

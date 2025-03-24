@@ -35,22 +35,15 @@
 
     <script>
         const btn = document.getElementById('submit');
-        const username = sessionStorage.getItem('username'); // Store username from login page
-
-        btn.addEventListener('click', async function (event) {
-            event.preventDefault(); // Prevent form from submitting
+       
+        btn.addEventListener('click', async function () {
 
             const code = document.getElementById('code').value;
-
-            if (!username) {
-                document.getElementById('message2').textContent = "Session expired. Please log in again.";
-                return;
-            }
 
             const response = await fetch('/login2', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, code })
+                body: JSON.stringify({  code })
             });
 
             const result = await response.json();
