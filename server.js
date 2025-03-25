@@ -3,15 +3,25 @@ const path = require("path");
 const nodemailer = require("nodemailer");
 require('dotenv').config();
 const session = require("express-session");
+const rateLimit = require("express-rate-limit");
+const cookieParser = require("cookie-parser");
+
+
+
 
 const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "main")));
 
 
-verificationCode = 0
+app.use((req, res, next) => {
+    console.log("Cookies: ", req.cookies); // Log received cookies
+    next();
+});
 
+let verificationCode = null
 
 const transporter = nodemailer.createTransport({
     service:'gmail',
@@ -43,64 +53,43 @@ let users = [
     {
         username: "user2",
         password: "password2",
-        email: "user2@example.com" 
+        email: "example@gmail.com" 
     }
 ];
 
-app.post('/login', async (req, res) => {
+const limiter = rateLimit({
+    windowMs: 1 * 60 * 1000, 
+    max: 5,
+    message: "Too many attempts, try again later."
+});
+
+app.post("/login", (req, res) => {
     const { username, password } = req.body;
     const user = users.find(u => u.username === username && u.password === password);
 
     if (user) {
-        req.session.user = user;
-        res.json({ success: true, message: "2FA code sent to your email." });
-        const code = Math.floor(0 + Math.random() * 99);
-        verificationCode = code
-
-        const mailOptions = await transporter.sendMail({
-            from: {
-                pass: process.env.EMAIL_USER
-
-            }, // sender address
-            to: user.email, // list of receivers
-            subject: "verification code", // Subject line
-            text:  `your verification code is ${code} `, // plain text body
-            html: `<b>Your verification code is ${code}</b>`
-        });
-        const sendMail = async(transporter,mailOptions)=>
-            {
-            
-            try {
-                await transporter.sendMail(mailOptions)
-                console.log("email has been sent")
-                
-             
-            } catch (error) {
-                console.error("❌ Email sending failed:", error);
-                res.status(500).json({ success: false, message: "Failed to send email." });
-            }
-       }
-
-   
-
+        res.cookie("verify", user.username, { httpOnly: false, secure: false }); // Insecure cookie!
+        res.json({ success: true, message: "Logged in, cookie set!" });
     } else {
-        res.status(401).json({ success: false, message: "Invalid username or password." });
+        res.status(401).json({ success: false, message: "Invalid credentials" });
     }
 });
+
 
 // Step 2: Verify 2FA code
 app.post('/login2', (req, res) => {
     const { code } = req.body;
-    
-    if (verificationCode == code) {
-        const user = users.find(u => u.username); 
+    const loggedInUser = req.cookies.verify;
+    const user = users.find(u => u.username === loggedInUser);
+  
+
+    if (parseInt(code) === req.session.verificationCode || req.session.cookie.user == user ) {
+        req.session.verified = true; // Mark user as fully authenticated
+       
         res.json({ success: true, message: "2FA verification successful!", user: req.session.user });
+
     } else {
-        res.status(401).json({
-            success: false, message: "Invalid 2FA code.", user: {
-                username: user.username,
-                email: user.email
-            } });
+        res.status(401).json({ success: false, message: "Invalid 2FA code." });
     }
 });
 
@@ -121,6 +110,36 @@ app.post('/logout', (req, res) => {
     req.session.destroy();
     res.json({ success: true, message: "Logged out successfully" });
 });
+app.post('/email', async (req, res) => {
+    const loggedInUser = req.cookies.verify;
+    const user = users.find(u => u.username === loggedInUser);
+    
+    if (!user) {
+        return res.status(401).json({ success: false, message: "User not found." });
+    }
+    req.session.user = user
+
+    const verificationCode = Math.floor(0 + Math.random() * 99);
+
+    req.session.verificationCode = verificationCode;
+
+    try {
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: user.email,
+            subject: "Your Verification Code",
+            text: `Your verification code is ${verificationCode}`,
+            html: `<b>Your verification code is ${verificationCode}</b>`
+        });
+
+        res.json({ success: true, message: "2FA code sent to your email." });
+
+    } catch (error) {
+        console.error("Email sending failed:", error);
+        res.status(500).json({ success: false, message: "Failed to send email." });
+    }
+});
+
 
 
 

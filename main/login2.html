@@ -34,6 +34,8 @@
     </div>
 
     <script>
+         const response =  fetch('/email', { method: 'POST' });
+       
         const btn = document.getElementById('submit');
        
         btn.addEventListener('click', async function () {
