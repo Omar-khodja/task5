@@ -56,7 +56,7 @@ let users = [
     {
         username: "user2",
         password: "password2",
-        email: "omar.dzgamer28@gmail.com" 
+        email: "@gmail.com" 
     }
 ];
 
