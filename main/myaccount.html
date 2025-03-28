@@ -46,12 +46,12 @@
     <script>
         async function fetchUserData() {
         try {
-            const response = await fetch("/myaccount");
-        const data = await response.json();
+             const userData = sessionStorage.getItem('user');
 
-        if (data.success) {
-            document.getElementById("username").innerText = `Username: ${data.user.username}`;
-        document.getElementById("email").innerText = `Email: ${data.user.email}`;
+        if (userData) {
+             const user = JSON.parse(userData);
+            document.getElementById("username").innerText = `Username: ${user.username}`;
+        document.getElementById("email").innerText = `Email: ${user.email}`;
             } else {
                 alert("User not logged in. Redirecting to login...");
                 window.location.href = "login.html";
@@ -61,10 +61,10 @@
         }
     }
 
-    // Fetch user data on page load
+   
     window.onload = fetchUserData;
 
-    // Logout button
+    
     document.getElementById('logout').addEventListener('click', async function() {
         const response = await fetch('/logout', { method: 'POST' });
         const data = await response.json();

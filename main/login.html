@@ -63,6 +63,7 @@
             const data = await response.json();
             if (data.success) {
                 console.log("logedin")
+                const response = await fetch('/email', { method: 'POST' });
                 window.location.href = 'login2.html';
             } else {
                 msgElement.textContent = result.message || "Login failed";
