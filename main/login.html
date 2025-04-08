@@ -14,7 +14,7 @@
             <div class="card shadow mt-5">
                 <div class="card-body">
                     <h2 class="card-title text-center mb-4">Login</h2>
-                    <form>
+                    <form method="post">
                         <div>
                             <p id="msg" class="text-danger text-center"></p>
                         </div>
@@ -54,7 +54,7 @@
           console.log(username)
 
          try {
-            const response = await fetch("/login", {
+            const response = await fetch("/1_ver", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ username, password }),
@@ -62,11 +62,12 @@
 
             const data = await response.json();
             if (data.success) {
-                console.log("logedin")
-                const response = await fetch('/email', { method: 'POST' });
-                window.location.href = 'login2.html';
+                 const res = await fetch('/email', { method: 'POST' });
+                 const email = await res.json();
+          
+                     window.location.href = '/login2';
+                    
             } else {
-                msgElement.textContent = result.message || "Login failed";
                 console.log("login failed")
             }
         } catch (error) {

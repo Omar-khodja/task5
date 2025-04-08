@@ -15,11 +15,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "main")));
 const verificationCodes = {};
 
-app.use((req, res, next) => {
-    console.log("Cookies: ", req.cookies); 
-    console.log("Session: ", req.session); 
-    next();
-});
+
 
 const transporter = nodemailer.createTransport({
     service:'gmail',
@@ -34,18 +30,25 @@ const transporter = nodemailer.createTransport({
 
 app.use(
     session({
-        secret: "your_secret_key",
+        secret: process.env.SESSION_SECRET,
         resave: false,
-        saveUninitialized: true,
+        saveUninitialized: false,
         cookie: {
-            secure: false,
-            name: 'myapp_session' 
+            secure: process.env.NODE_ENV === 'production',
+            httpOnly:true,
+            sameSite: 'lax',
+            name: 'myapp_session', 
         },
         genid: function (req) {
             return require('crypto').randomUUID(); 
         }
     })
 );
+app.use((req, res, next) => {
+    console.log("Cookies: ", req.cookies);
+    console.log("Session: ", req.session);
+    next();
+});
 
 let users = [
     {
@@ -56,19 +59,28 @@ let users = [
     {
         username: "user2",
         password: "password2",
-        email: "@gmail.com" 
+        email: "omar.dzgamer28@gmail.com" 
     }
 ];
 
+app.post("/register",(req,res)=>{
+    const { username, email, password } = req.body;
+    const user = users.find(u => u.username === username && u.password === password && u.email === email )
+    if(user){
+      return  res.json({success:false , message:"user is already exists"});
+    }
+    users.push({username,password,email});
+    res.json({ success: true, message: "Registrasion successful" });
 
+})
 
-app.post("/login", (req, res) => {
+app.post("/1_ver", (req, res) => {
     const { username, password } = req.body;
     const user = users.find(u => u.username === username && u.password === password);
 
     if (user) {
-        req.session.user = user
-        res.cookie("verify", user.username, { httpOnly: false, secure: false }); 
+        req.session.user = username
+        res.cookie("verify", user.username, ); 
         res.json({ success: true, message: "Logged in, cookie set!" });
     } else {
         res.status(401).json({ success: false, message: "Invalid credentials" });
@@ -77,7 +89,7 @@ app.post("/login", (req, res) => {
 
 
 
-app.post('/login2', (req, res) => {
+app.post('/2_ver', (req, res) => {
     const { code } = req.body;
     const loggedInUser = req.cookies.verify;
     const user = users.find(u => u.username === loggedInUser);
@@ -97,17 +109,9 @@ app.post('/login2', (req, res) => {
 });
 
 
-
-
-
-
-
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "main", "login.html"));
-});
-
 app.post('/logout', (req, res) => {
     req.session.destroy();
+    res.clearCookie("myapp_session");
     res.json({ success: true, message: "Logged out successfully" });
 });
 app.post('/email', async (req, res) => {
@@ -121,6 +125,7 @@ app.post('/email', async (req, res) => {
     const verificationCode = Math.floor(0 + Math.random() * 99);
 
     verificationCodes[user.username] = verificationCode;
+    console.log(verificationCode)
 
     try {
         await transporter.sendMail({
@@ -142,6 +147,21 @@ app.post('/email', async (req, res) => {
 
 
 
+app.get("/login2", (req, res) => {
+    res.sendFile(path.join(__dirname, "main", "login2.html"));
+});
+
+app.get("/login", (req, res) => {
+    res.sendFile(path.join(__dirname, "main", "login.html"));
+});
+
+app.get("/myaccount", (req, res) => {
+    res.sendFile(path.join(__dirname, "main", "myaccount.html"));
+});
+
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "main", "registration.html"));
+});
 
 
 const PORT = 3000;

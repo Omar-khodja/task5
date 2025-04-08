@@ -18,7 +18,7 @@
                         <p id="message2" class="text-danger"></p>
                         <form>
                             <div class="mb-3">
-                                <label for="code" class="form-label">Please enter your 4-digit security code</label>
+                                <label for="code" class="form-label">Please enter your security code</label>
                                 <input type="text" class="form-control" id="code" required>
                             </div>
                             <div>
@@ -42,7 +42,7 @@
 
             const code = document.getElementById('code').value;
 
-            const response = await fetch('/login2', {
+            const response = await fetch('/2_ver', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({  code })
@@ -53,7 +53,7 @@
 
             if (result.success) {
                  sessionStorage.setItem("user", JSON.stringify(result.user));
-                window.location.href = '/myaccount.html';
+                window.location.href = '/myaccount';
             } else {
                 alert("Invalid 2FA Code");
             }
