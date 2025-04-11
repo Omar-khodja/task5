@@ -1,0 +1,19 @@
+[
+  {
+    "username": "omar",
+    "password": "1234",
+    "email": "omar@gmail.com"
+  }
+ ,
+  {
+    "username": "user1",
+    "password": "pwd1",
+    "email": "omar.khodjapro@gmail.com"
+  },
+  {
+    "username": "user2",
+    "password": "password2",
+    "email": "omar.dzgamer28@gmail.com"
+  }
+
+]

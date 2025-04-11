@@ -63,6 +63,9 @@
             const password = document.getElementById('password').value;
              const email = document.getElementById('email').value;
             const msgElement = document.getElementById('msg');
+            if(username.trim() ===""&&password.trim()===""&& email.trim() ===""){
+                return;
+            }
 
             try {
                 const response = await fetch("/register", {
@@ -76,7 +79,7 @@
                     
                     window.location.href = '/login';
                 } else {       
-                    console.log("login failed")
+                    alert("user is already exists");
                 }
             } catch (error) {
                 console.error('Registration error:', error);

@@ -4,6 +4,7 @@ const nodemailer = require("nodemailer");
 require('dotenv').config();
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
+const fs = require("fs");
 
 
 
@@ -14,6 +15,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "main")));
 const verificationCodes = {};
+const usersFile = path.join(__dirname, "data.json");
 
 
 
@@ -39,9 +41,7 @@ app.use(
             sameSite: 'lax',
             name: 'myapp_session', 
         },
-        genid: function (req) {
-            return require('crypto').randomUUID(); 
-        }
+        
     })
 );
 app.use((req, res, next) => {
@@ -50,26 +50,30 @@ app.use((req, res, next) => {
     next();
 });
 
-let users = [
-    {
-        username: "user1",
-        password: "pwd1",
-        email: "omar.khodjapro@gmail.com" 
-    },
-    {
-        username: "user2",
-        password: "password2",
-        email: "omar.dzgamer28@gmail.com" 
+function loadUsers() {
+    if (fs.existsSync(usersFile)) {
+        const data = fs.readFileSync(usersFile);
+        return JSON.parse(data);
     }
-];
+    return [];
+}
+
+function saveUsers(users) {
+    fs.writeFileSync(usersFile, JSON.stringify(users, null, 2));
+}
+
+let users = loadUsers();
+
 
 app.post("/register",(req,res)=>{
     const { username, email, password } = req.body;
-    const user = users.find(u => u.username === username && u.password === password && u.email === email )
+    const user = users.find(u => u.username === username  )
     if(user){
       return  res.json({success:false , message:"user is already exists"});
     }
-    users.push({username,password,email});
+    const newUser = { username, password, email };
+    users.push(newUser);
+    saveUsers(users);
     res.json({ success: true, message: "Registrasion successful" });
 
 })
