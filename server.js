@@ -5,6 +5,7 @@ require('dotenv').config();
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
 const fs = require("fs");
+const rateLimit = require("express-rate-limit");
 
 
 
@@ -61,6 +62,12 @@ function loadUsers() {
 function saveUsers(users) {
     fs.writeFileSync(usersFile, JSON.stringify(users, null, 2));
 }
+
+const verfylimit = rateLimit({
+    windowMs:1*60*1000,
+    max:3,
+    msg: "Too many attempts, try again later"
+})
 
 let users = loadUsers();
 
