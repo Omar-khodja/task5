@@ -37,19 +37,12 @@ app.use(
         resave: false,
         saveUninitialized: false,
         cookie: {
-            secure: process.env.NODE_ENV === 'production',
-            httpOnly:true,
-            sameSite: 'lax',
-            name: 'myapp_session', 
+            secure:true, 
         },
         
     })
 );
-app.use((req, res, next) => {
-    console.log("Cookies: ", req.cookies);
-    console.log("Session: ", req.session);
-    next();
-});
+
 
 function loadUsers() {
     if (fs.existsSync(usersFile)) {
